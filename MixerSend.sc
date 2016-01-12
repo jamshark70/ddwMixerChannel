@@ -187,31 +187,30 @@ MixerPreSend : MixerSend {
 	}
 
 	initPreSend { arg in1, out1, lev = 1, target;
+		var testChannels;
 
 		inMixer = in1;	// must be mixerchannel in
 		level = lev ? 1;
 		targ = target;
 
 		// Buses should be left alone, other types are fixed by following rules:
-		out1.isKindOf(Bus).if({
-			nil
-		}, {
-			// support for mixerchannels in
-			out1.isMixerChannel.if({
-				out1 = out1.inbus;
-			});
-
-			// support for sending bus # for out
-			out1.isNumber.if({
-				out1 = Bus.new(\audio, out1, inMixer.inChannels, inMixer.server);
-			});
-
-		});
+		case
+		{ out1.isKindOf(Bus) } {
+			testChannels = out1.numChannels;
+		}
+		{ out1.isMixerChannel } {
+			testChannels = out1.inChannels;
+			out1 = out1.inbus;
+		}
+		{ out1.isNumber } {
+			out1 = Bus.new(\audio, out1, inMixer.inChannels, inMixer.server);
+			testChannels = out1.numChannels;
+		};
 
 		// check numchannels
-		(inMixer.inChannels != out1.numChannels).if({
+		(inMixer.inChannels != testChannels).if({
 			("Warning: numChannel mismatch creating send for " ++ inMixer.name
-				++ " -- " ++ inMixer.inChannels ++ " --> " ++ outbus.numChannels).postln;
+				++ " -- " ++ inMixer.inChannels ++ " --> " ++ testChannels).postln;
 		});
 
 		level = lev;
@@ -260,8 +259,8 @@ MixerPreSend : MixerSend {
 		sendSynth.free;	// stop sending
 		sendSynth.server.nodeAllocator.freePerm(sendSynth.nodeID);
 		levelControl.free;
-
-		// fix gui display
+		
+			// fix gui display
 		(inMixer.mcgui.notNil && updateGUI).if({ inMixer.mcgui.board.refresh });
 	}
 
@@ -281,30 +280,31 @@ MixerPostSend : MixerSend {
 	}
 
 	initPostSend { arg in1, out1, lev = 1, target;
+		var testChannels;
 
 		inMixer = in1;	// must be mixerchannel in
 
 		level = lev ? 1;
 
-		out1.isKindOf(Bus).if({
-			nil
-		}, {
-			// support for mixerchannels for out
-			out1.isMixerChannel.if({
-				out1 = out1.inbus;
-			});
-
-			// support for bus # for out
-			out1.isNumber.if({
-				out1 = Bus.new(\audio, out1, inMixer.outChannels, inMixer.server);
-			});
-		});
+		// Buses should be left alone, other types are fixed by following rules:
+		case
+		{ out1.isKindOf(Bus) } {
+			testChannels = out1.numChannels;
+		}
+		{ out1.isMixerChannel } {
+			testChannels = out1.inChannels;
+			out1 = out1.inbus;
+		}
+		{ out1.isNumber } {
+			out1 = Bus.new(\audio, out1, inMixer.outChannels, inMixer.server);
+			testChannels = out1.numChannels;
+		};
 
 		// check numchannels
 		// outChannels here b/c this is postfader, using output channels
-		(inMixer.outChannels != out1.numChannels).if({
+		(inMixer.outChannels != testChannels).if({
 			("Warning: numChannel mismatch creating send for " ++ inMixer.name
-				++ " -- " ++ inMixer.outChannels ++ " --> " ++ out1.numChannels).postln;
+				++ " -- " ++ inMixer.outChannels ++ " --> " ++ testChannels).postln;
 		});
 
 		this.makeServerObjects(out1);
