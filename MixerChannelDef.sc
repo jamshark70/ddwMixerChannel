@@ -23,10 +23,10 @@ MixerChannelDef {
 		StartUp.add {
 			MixerChannelDef(\mix1x1, 1, 1,
 				fader: SynthDef("mixers/Mxb1x1", {
-					arg busin, busout, level;
+					arg busin, busout, level, clip = 2;
 					var in, bad, badEG;
 					in = In.ar(busin, 1) * level;
-					bad = CheckBadValues.ar(in, post: 0) + (in.abs > 2);
+					bad = CheckBadValues.ar(in, post: 0) + (8 * (in.abs > clip));
 					SendReply.ar(bad, '/mixerChBadValue', bad, 0);
 					badEG = EnvGen.ar(Env(#[1, 0, 1], #[0, 0.05], releaseNode: 1), bad);
 					in = Select.ar(bad > 0, [in * badEG, DC.ar(0)]);
@@ -34,15 +34,18 @@ MixerChannelDef {
 					ReplaceOut.ar(busin, in);
 					Out.ar(busout, in);
 				}, [nil, nil, 0.08]),
-				controls: (level: (spec: \amp, value: 0.75))
+				controls: (
+					level: (spec: \amp, value: 0.75),
+					clip: (spec: [0.1, 100, \exp], value: 2)
+				)
 			);
 
 			MixerChannelDef(\mix1x2, 1, 2,
 				fader: SynthDef("mixers/Mxb1x2", {
-					arg busin, busout, level, pan;
+					arg busin, busout, level, pan, clip = 2;
 					var in, out, bad, badEG;
 					in = In.ar(busin, 1) * level;
-					bad = CheckBadValues.ar(in, post: 0) + (in.abs > 2);
+					bad = CheckBadValues.ar(in, post: 0) + (8 * (in.abs > clip));
 					SendReply.ar(bad, '/mixerChBadValue', bad, 0);
 					badEG = EnvGen.ar(Env(#[1, 0, 1], #[0, 0.05], releaseNode: 1), bad);
 					in = Select.ar(bad > 0, [in * badEG, DC.ar(0)]);
@@ -52,16 +55,17 @@ MixerChannelDef {
 					Out.ar(busout, out);
 				}, [nil, nil, 0.08, 0.08]),
 				controls: (level: (spec: \amp, value: 0.75),
-					pan: \bipolar
+					pan: \bipolar,
+					clip: (spec: [0.1, 100, \exp], value: 2)
 				)
 			);
 
 			MixerChannelDef(\mix2x2, 2, 2,
 				fader: SynthDef("mixers/Mxb2x2", {
-					arg busin, busout, level, pan;
+					arg busin, busout, level, pan, clip = 2;
 					var in, l, r, out, bad, badEG, silent = DC.ar(0);
 					in = In.ar(busin, 2) * level;
-					bad = (CheckBadValues.ar(in, post: 0) + (8 * (in.abs > 2)));
+					bad = (CheckBadValues.ar(in, post: 0) + (8 * (in.abs > clip)));
 					SendReply.ar(bad, '/mixerChBadValue', bad, 0);
 					bad = bad.sum;
 					badEG = EnvGen.ar(Env(#[1, 0, 1], #[0, 0.05], releaseNode: 1), bad);
@@ -72,7 +76,8 @@ MixerChannelDef {
 					Out.ar(busout, out);
 				}, [nil, nil, 0.08, 0.08]),
 				controls: (level: (spec: \amp, value: 0.75),
-					pan: \bipolar
+					pan: \bipolar,
+					clip: (spec: [0.1, 100, \exp], value: 2)
 				)
 			);
 		};
