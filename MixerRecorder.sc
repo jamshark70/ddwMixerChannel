@@ -20,7 +20,7 @@ MixerRecorder {
 	*new { arg mixer, path, headerFormat = "aiff", sampleFormat = "float";
 		^super.new.init(mixer, path, headerFormat, sampleFormat);
 	}
-	
+
 	init { arg mix, p, head, samp;
 		mixer = mix;
 		mixer.server.serverRunning.not.if({ "server not running".inform; ^this });
@@ -33,16 +33,16 @@ MixerRecorder {
 		("Prepared for recording: " ++ path).postln;
 		CmdPeriod.add(this);
 	}
-	
+
 	cmdPeriod {
 		CmdPeriod.remove(this);
 		this.close;
 	}
-	
+
 	record { arg paused = false;
 		var bus;
 		buffer.isNil.if({ this.init });
-		
+
 			// should not create a synth if already recording
 		synth.isNil.if({
 			bus = mixer.inbus;
@@ -60,7 +60,7 @@ MixerRecorder {
 			mixer.mcgui !? { mixer.mcgui.updateView(\record, mixer.isRecording.binaryValue) };
 		});
 	}
-	
+
 	pause {
 		synth.notNil.if({
 			synth.run(false);
@@ -69,7 +69,7 @@ MixerRecorder {
 		running = false;
 		mixer.mcgui !? { mixer.mcgui.updateView(\record, mixer.isRecording.binaryValue) };
 	}
-	
+
 	unpause {
 		synth.notNil.if({
 			synth.run(true);
@@ -80,20 +80,23 @@ MixerRecorder {
 	}
 
 	close {
-		synth.notNil.if({ 
-			synth.free;
-			synth.server.nodeAllocator.freePerm(synth.nodeID);
-			synth = nil;
-		});
-		buffer.notNil.if({
-			("******** Recording ended. File closed: " ++ path).postln;
-			buffer.close;
-		});
-		mixer.mcgui !? { mixer.mcgui.updateView(\record, false.binaryValue) };
-		path = nil;
-		buffer.free;
-		buffer = nil;
-		running = false;
-		CmdPeriod.remove(this);		// does not need to respond to cmd-. any more
+		{
+			synth.notNil.if({
+				synth.free;
+				synth.server.nodeAllocator.freePerm(synth.nodeID);
+				synth = nil;
+			});
+			0.5.wait;
+			buffer.notNil.if({
+				("******** Recording ended. File closed: " ++ path).postln;
+				buffer.close;
+			});
+			mixer.mcgui !? { mixer.mcgui.updateView(\record, false.binaryValue) };
+			path = nil;
+			buffer.free;
+			buffer = nil;
+			running = false;
+			CmdPeriod.remove(this);		// does not need to respond to cmd-. any more
+		}.fork(AppClock);
 	}
 }
