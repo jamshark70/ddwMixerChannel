@@ -899,7 +899,7 @@ MixerChannel {
 	*initClass {
 		servers = Dictionary.new;
 		Class.initClassTree(Server);
-		Server.set.do({ |srv| srv.addDependant(MixerChannel); });
+		Server.all.do({ |srv| srv.addDependant(MixerChannel); });
 	}
 }
 
