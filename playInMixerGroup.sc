@@ -149,6 +149,24 @@
 	}
 }
 
++ EventStreamPlayer {
+	playInMixerGroup { |mixer, target, patchType, args|
+		var	protoEvent;
+		args ?? { args = () };
+		protoEvent = this.event;
+		protoEvent.proto ?? { protoEvent.proto = () };
+		protoEvent.proto.putAll((
+			chan: mixer,
+			server: mixer.server,
+			group: target.tryPerform(\nodeID) ?? { target },
+			bus: mixer.inbus,
+			outbus: mixer.inbus.index,
+			out: mixer.inbus.index,
+			i_out: mixer.inbus.index
+		));
+		^this.play(args[\clock], args[\doReset], args[\quant]);
+	}
+}
 
 // needed for type tests
 
