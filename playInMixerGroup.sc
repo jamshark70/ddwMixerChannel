@@ -118,7 +118,7 @@
 	playInMixerGroup { |mixer, target, patchType, args|
 		var	protoEvent;
 		args ?? { args = () };
-		protoEvent = this.event;
+		protoEvent = this.event.copy;
 		protoEvent.proto ?? { protoEvent.proto = () };
 		protoEvent.proto.putAll((
 			chan: mixer,
@@ -129,6 +129,7 @@
 			out: mixer.inbus.index,
 			i_out: mixer.inbus.index
 		));
+		this.event = protoEvent;
 		^this.play(args[\clock], args[\doReset], args[\quant]);
 	}
 }
