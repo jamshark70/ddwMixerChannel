@@ -306,18 +306,14 @@ MixerChannel {
 			// to free MC's (most important, remove them from reconstructor)
 		switch(changer)
 			{ \serverRunning } {
-				obj.serverRunning.if({
-						// no need for waitForBoot b/c the serverRunning message occurs
-						// only when the server has sent an alive message
-					MixerChannelDef.sendSynthDefs(obj);
-				}, {
+				if(obj.serverRunning.not) {
 					AppClock.sched(5, {
 						obj.serverRunning.not.if({
 								// free all channels associated with this server
 							this.servers[obj].tryPerform(\values).do({ |mc| mc.free });
 						});
 					});
-				});
+				};
 			}
 			{ \serverAdded } {
 				subject.addDependant(this);
@@ -899,7 +895,12 @@ MixerChannel {
 	*initClass {
 		servers = Dictionary.new;
 		Class.initClassTree(Server);
-		Server.all.do({ |srv| srv.addDependant(MixerChannel); });
+		// Server.all.do({ |srv| srv.addDependant(MixerChannel); });
+		Server.addDependant(MixerChannel);
+		Class.initClassTree(ServerBoot);
+		ServerBoot.add { |server|
+			MixerChannelDef.sendSynthDefs(server)
+		};
 	}
 }
 

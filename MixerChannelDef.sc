@@ -164,15 +164,20 @@ MixerChannelDef {
 	}
 
 	sendDefsToRunningServers {
+		// 3.9 has a breaking change: can't use serverRunning during server boot process
+		var method = if(Main.versionAtLeast(3, 9)) { \hasBooted } { \serverRunning };
 		Server.named.do({ |server|
-			this.sendSynthDefs(server);
+			if(server.perform(method)) {
+				this.sendSynthDefs(server);
+			};
 		});
 	}
 
 	// send the mixer, xfer, send and record synths for this MCDef
 	sendSynthDefs { |server|
+		var method = if(Main.versionAtLeast(3, 9)) { \hasBooted } { \serverRunning };
 		server = server ?? Server.default;
-		server.serverRunning.if({
+		if(server.perform(method)) {
 			this.synthdef.send(server);
 
 			// this doesn't cover all cases
@@ -195,7 +200,10 @@ MixerChannelDef {
 				DiskOut.ar(i_bufNum, In.ar(i_in, outChannels));
 			}).send(server);
 
-		});
+		} {
+			"MixerChannelDef tried to send SynthDefs to server '%' but it isn't running"
+			.format(server.name).warn;
+		};
 	}
 
 	*sendSynthDefs { |server|
