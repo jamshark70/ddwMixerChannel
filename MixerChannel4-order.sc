@@ -985,6 +985,8 @@ MixerChannelReconstructor {
 		bundleQueue = List.new;
 	}
 
+	*isRunning { ^queueRoutine.notNil }
+
 	*add { arg chan;
 		mixers[chan.server].isNil.if({
 			mixers.put(chan.server,
