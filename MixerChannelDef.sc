@@ -187,13 +187,13 @@ MixerChannelDef {
 			// so, you can break it only by doing something stupid to begin with
 			SynthDef("mixers/Send" ++ outChannels, {
 				arg busin, busout, level;
-				var in = In.ar(busin, outChannels), bad, badEG, silent = DC.ar(0);
+				var in = In.ar(busin, outChannels) * level, bad, badEG, silent = DC.ar(0);
 				bad = (CheckBadValues.ar(in, post: 0) + (in.abs > 2)).asArray.sum > 0;
 				// SendReply.ar(bad, '/mixerChBadValue', bad, 1);
 				badEG = EnvGen.ar(Env(#[1, 0, 1], #[0, 0.05], releaseNode: 1), bad);
 				bad = bad > 0;
 				in = in.asArray.collect { |chan| Select.ar(bad, [chan * badEG, silent]) };
-				Out.ar(busout, in * level);
+				Out.ar(busout, in);
 			}, [nil, nil, 0.08]).send(server);
 
 			SynthDef("mixers/Rec" ++ outChannels, { arg i_in, i_bufNum = 0;
