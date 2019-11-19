@@ -335,9 +335,11 @@ MixerChannel {
 
 	outbus_ { arg bus, updateGUI = true, target, moveAction;
 		var bundle;
-		bundle = List.new;
-		this.outbusSetToBundle(bus, updateGUI, target, moveAction, bundle);
-		MixerChannelReconstructor.queueBundle(server, bundle);
+		if(outbus.notNil) {
+			bundle = List.new;
+			this.outbusSetToBundle(bus, updateGUI, target, moveAction, bundle);
+			MixerChannelReconstructor.queueBundle(server, bundle);
+		};
 	}
 
 	outbusSetToBundle { arg bus, updateGUI = true, target, moveAction, bundle;

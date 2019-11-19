@@ -91,9 +91,11 @@ MixerSend {
 
 	outbus_ { arg bus, updateGUI = true, target, moveAction;
 		var bundle;
-		bundle = List.new;
-		this.outbusSetToBundle(bus, updateGUI, target, moveAction, bundle);
-		MixerChannelReconstructor.queueBundle(inMixer.server, bundle);
+		if(outbus.notNil) {
+			bundle = List.new;
+			this.outbusSetToBundle(bus, updateGUI, target, moveAction, bundle);
+			MixerChannelReconstructor.queueBundle(inMixer.server, bundle);
+		};
 	}
 
 	outbusSetToBundle { 		// repatch send to another bus
@@ -259,7 +261,7 @@ MixerPreSend : MixerSend {
 		sendSynth.free;	// stop sending
 		sendSynth.server.nodeAllocator.freePerm(sendSynth.nodeID);
 		levelControl.free;
-		
+
 			// fix gui display
 		(inMixer.mcgui.notNil && updateGUI).if({ inMixer.mcgui.board.refresh });
 	}
