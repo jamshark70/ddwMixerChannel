@@ -79,10 +79,16 @@
 	playInMixerGroup { |mixer, target, patchType, args|
 		var result, def, updateFunc;
 		mixer.queueBundle({
-			def = this.asSynthDef(
-				outClass: (target == mixer.effectgroup).if({ \ReplaceOut }, { \Out }));
+			def = {
+				var gate;
+				var graph = SynthDef.wrap(this);
+				if(UGen.buildSynthDef.allControlNames.includes(\gate).not) {
+					gate = NamedControl.kr(\gate, 1);
+					graph = graph * EnvGen.kr(Env.asr(0.01, 1, 0.02, 0), gate, doneAction: 2);
+				};
+			}.asSynthDef(outClass: if(target == mixer.effectgroup, { \ReplaceOut }, { \Out }));
 			result = def.play(target, args ++ [\i_out, mixer.inbus.index, \out, mixer.inbus.index,
-					\outbus, mixer.inbus.index], \addToTail);
+				\outbus, mixer.inbus.index], \addToTail);
 			updateFunc = { |node, msg|
 				if(msg == \n_end) {
 					node.removeDependant(updateFunc);
