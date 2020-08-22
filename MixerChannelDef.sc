@@ -28,8 +28,7 @@ MixerChannelDef {
 					in = In.ar(busin, 1) * level;
 					// On server quit, `clip` may be set to 0 before processing is finished
 					// In that case, spurious out-of-range warnings are produced
-					// So slow down the usage of the changed value
-					clip = VarLag.kr(clip, ControlDur.ir * 5, warp: \sin);
+					clip = max(1, clip);
 					bad = CheckBadValues.ar(in, post: 0) + (8 * (in.abs > clip));
 					SendReply.ar(bad, '/mixerChBadValue', [bad, in].flat, 0);
 					badEG = EnvGen.ar(Env(#[1, 0, 1], #[0, 0.05], releaseNode: 1), bad);
@@ -49,7 +48,7 @@ MixerChannelDef {
 					arg busin, busout, level, pan, clip = 2;
 					var in, out, bad, badEG;
 					in = In.ar(busin, 1) * level;
-					clip = VarLag.kr(clip, ControlDur.ir * 5, warp: \sin);
+					clip = max(1, clip);
 					bad = CheckBadValues.ar(in, post: 0) + (8 * (in.abs > clip));
 					SendReply.ar(bad, '/mixerChBadValue', [bad, in].flat, 0);
 					badEG = EnvGen.ar(Env(#[1, 0, 1], #[0, 0.05], releaseNode: 1), bad);
@@ -70,7 +69,7 @@ MixerChannelDef {
 					arg busin, busout, level, pan, clip = 2;
 					var in, l, r, out, bad, badEG, silent = DC.ar(0);
 					in = In.ar(busin, 2) * level;
-					clip = VarLag.kr(clip, ControlDur.ir * 5, warp: \sin);
+					clip = max(1, clip);
 					bad = (CheckBadValues.ar(in, post: 0) + (8 * (in.abs > clip)));
 					SendReply.ar(bad, '/mixerChBadValue', [bad, in, clip].flat, 0);
 					bad = bad.sum;
