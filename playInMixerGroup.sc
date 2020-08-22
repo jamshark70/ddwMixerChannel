@@ -164,6 +164,13 @@
 	}
 }
 
++ NodeProxy {
+	playInMixerGroup { |mixer, target, patchType, args|
+		group.moveToTail(mixer.synthgroup);
+		this.play(mixer.inbus, this.numChannels, mixer.synthgroup, vol: 1, fadeTime: this.fadeTime, addAction: \addToTail);
+	}
+}
+
 // needed for type tests
 
 + Object {
