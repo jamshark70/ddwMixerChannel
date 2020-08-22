@@ -167,7 +167,7 @@
 + NodeProxy {
 	playInMixerGroup { |mixer, target, patchType, args|
 		group.moveToTail(mixer.synthgroup);
-		this.play(mixer.inbus, this.numChannels, mixer.synthgroup, vol: 1, fadeTime: this.fadeTime, addAction: \addToTail);
+		this.play(mixer.inbus, this.numChannels, target, vol: 1, fadeTime: this.fadeTime, addAction: \addToTail);
 	}
 }
 
