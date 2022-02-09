@@ -18,6 +18,7 @@ MixerSend {
 		(updateGUI && inMixer.mcgui.notNil && guiIndex.notNil).if({
 			inMixer.mcgui.updateView(this.guiKey, level);
 		});
+		this.changed(\sendLevel, lev);
 		^this
 	}
 
@@ -264,6 +265,7 @@ MixerPreSend : MixerSend {
 
 			// fix gui display
 		(inMixer.mcgui.notNil && updateGUI).if({ inMixer.mcgui.board.refresh });
+		this.changed(\didFree);
 	}
 
 	guiKey { ^("presend" ++ guiIndex).asSymbol }
@@ -357,6 +359,7 @@ MixerPostSend : MixerSend {
 
 		// fix gui display
 		(inMixer.mcgui.notNil && updateGUI).if({ inMixer.mcgui.board.refresh });
+		this.changed(\didFree);
 	}
 
 	guiKey { ^("postsend" ++ guiIndex).asSymbol }
