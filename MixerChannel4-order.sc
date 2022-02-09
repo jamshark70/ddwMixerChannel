@@ -1015,6 +1015,9 @@ MixerChannelReconstructor {
 			// way to get people to stop panicking when they see the "variable declarations"
 			// warning.
 		var	bundleAction;
+		var physTimeAdjust = {
+			max(0, Main.elapsedTime - thisThread.beats) + queueDelay
+		};
 
 		bundleAction = {
 			var	thisBundle;
@@ -1022,21 +1025,24 @@ MixerChannelReconstructor {
 				thisBundle = bundleQueue.removeAt(0);
 				(thisBundle.bundle ?? { [] }).clump(5).do({ |clump|
 					thisBundle.server.listSendBundle(thisBundle.server.latency, clump);
-					queueDelay.wait;
+					physTimeAdjust.value.wait;
 				});
 				thisBundle[\chan] !? { thisBundle[\chan].bundled = 2 };  // "ready"
 				thisBundle[\func].notNil.if({
-					SystemClock.sched((thisBundle.server.latency ? 0.2) + queueDelay, Routine({
-						thisBundle[\env].notNil.if({
-							thisBundle[\env].use({
+					SystemClock.sched(
+						physTimeAdjust.value + (thisBundle.server.latency ? 0.2),
+						Routine({
+							thisBundle[\env].notNil.if({
+								thisBundle[\env].use({
+									thisBundle[\func].value(thisBundle[\chan]);
+								});
+							}, {
 								thisBundle[\func].value(thisBundle[\chan]);
 							});
-						}, {
-							thisBundle[\func].value(thisBundle[\chan]);
-						});
-						nil.yield
-					}));
-					queueDelay.wait;
+							nil.yield
+						})
+					);
+					physTimeAdjust.value.wait;
 				});
 			} { |error|
 				error.reportError;
@@ -1052,7 +1058,7 @@ MixerChannelReconstructor {
 					nil.yield;
 				}),
 			{ queueRoutine = nil; });	// when routine stops, clear so I can restart next time
-			SystemClock.sched(0, queueRoutine);
+			SystemClock.schedAbs(Main.elapsedTime + 0.001, queueRoutine);
 		});
 	}
 
