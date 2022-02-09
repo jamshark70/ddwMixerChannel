@@ -39,7 +39,7 @@ MixerChannelDef {
 				}, [nil, nil, 0.08]),
 				controls: (
 					level: (spec: \amp, value: 0.75),
-					clip: (spec: [0.1, 100, \exp], value: 2)
+					clip: (spec: [0.1, 100, \exp], value: 20.dbamp)
 				)
 			);
 
@@ -60,7 +60,7 @@ MixerChannelDef {
 				}, [nil, nil, 0.08, 0.08]),
 				controls: (level: (spec: \amp, value: 0.75),
 					pan: \bipolar,
-					clip: (spec: [0.1, 100, \exp], value: 2)
+					clip: (spec: [0.1, 100, \exp], value: 20.dbamp)
 				)
 			);
 
@@ -82,7 +82,7 @@ MixerChannelDef {
 				}, [nil, nil, 0.08, 0.08]),
 				controls: (level: (spec: \amp, value: 0.75),
 					pan: \bipolar,
-					clip: (spec: [0.1, 100, \exp], value: 2)
+					clip: (spec: [0.1, 100, \exp], value: 20.dbamp)
 				)
 			);
 		};
