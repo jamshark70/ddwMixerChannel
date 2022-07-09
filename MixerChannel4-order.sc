@@ -402,10 +402,10 @@ MixerChannel {
 	*fixNodeOrderToBundle { |serv, bundle|
 		var	mx;
 		((mx = servers[serv]).size > 0).if({
-			mx = mx.values.asArray.sort({ |a, b| a.numMixersInChain > b.numMixersInChain });
-			bundle.add(mx[0].fadergroup.moveToHeadMsg(serv.asTarget));
-			mx.doAdjacentPairs({ |before, after|
-				bundle.add(after.fadergroup.moveAfterMsg(before.fadergroup));
+			mx = mx.values.asArray.sort({ |a, b| a.numMixersInChain < b.numMixersInChain });
+			bundle.add(mx[0].fadergroup.moveToTailMsg(serv.asTarget));
+			mx.doAdjacentPairs({ |after, before|
+				bundle.add(before.fadergroup.moveBeforeMsg(after.fadergroup));
 			});
 		});
 	}
