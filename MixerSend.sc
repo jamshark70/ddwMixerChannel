@@ -106,10 +106,16 @@ MixerSend {
 		targ = targ ? target;
 
 		bus.isMixerChannel.if({
-			bus = bus.inbus;
+			if(bus.def.rate == inMixer.def.rate) {
+				bus = bus.inbus;
+			} {
+				Error("Rate mismatch between '%' and '%' mixers"
+					.format(inMixer.name, bus.name)
+				).throw
+			};
 		});
 		bus.isNumber.if({
-			bus = Bus.new(\audio, bus, inMixer.inChannels, inMixer.server);
+			bus = Bus.new(inMixer.def.rate, bus, inMixer.inChannels, inMixer.server);
 		});
 
 		((mc = bus.asMixer).notNil).if({
@@ -169,7 +175,7 @@ MixerSend {
 		destMixer.notNil.if({
 			destMixer.postln;			// show as mixer
 		}, {
-			(BusDict.audioNames.at(inMixer.server).at(outbus.index) ++ " -> " ++ outbus).postln;			// show as bus
+			(BusDict.perform(inMixer.def.names).at(inMixer.server).at(outbus.index) ++ " -> " ++ outbus).postln;			// show as bus
 		});
 		indent.reptChar.post;
 		("      Level: " ++ level.round(0.001) ++ " ("

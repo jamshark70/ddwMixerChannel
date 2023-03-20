@@ -15,7 +15,7 @@ MixerChannelDef {
 	// to be resent so that running servers are in sync with the definition
 
 	var	<>name, <>inChannels, <outChannels, <fader,
-	<>controls, <>guidef;
+	<>controls, <>guidef, <>rate = \audio;
 
 	*initClass {
 		Class.initClassTree(Collection);
@@ -167,6 +167,8 @@ MixerChannelDef {
 			this.sendDefsToRunningServers;
 		});
 	}
+
+	names { ^(rate ++ "Names").asSymbol }
 
 	sendDefsToRunningServers {
 		// 3.9 has a breaking change: can't use serverRunning during server boot process

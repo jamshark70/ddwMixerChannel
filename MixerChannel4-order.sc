@@ -120,11 +120,11 @@ MixerChannel {
 		patchesPlayed = Array.new;
 
 		inbus.isNil.if({	// if in/out buses are nil, create them
-			inbus = BusDict.audio(server,
+			inbus = BusDict.perform(def.rate, server,
 				 max(def.outChannels, def.inChannels), name ++ " in");
 		});
 		bus.isNil.if({
-			bus = Bus.new(\audio, 0, def.outChannels, server);
+			bus = Bus.new(def.rate, 0, def.outChannels, server);
 		});
 
 			// allow bus number as argument
@@ -133,18 +133,24 @@ MixerChannel {
 			// error but your mixerchannel won't work
 		inbus = inbus.isKindOf(Bus).if(
 			{ inbus },	// if it's already a bus, leave it alone
-			{ Bus.new(\audio, inbus,
+			{ Bus.new(def.rate, inbus,
 				max(def.outChannels, def.inChannels), server) }
 		);
 
 		inbus = SharedBus.newFrom(inbus, this);	// so Patch.free won't take away my bus
 
 		bus.isMixerChannel.if({
-			bus = bus.inbus;		// route output of this to input of dest mc
+			if(bus.def.rate == def.rate) {
+				bus = bus.inbus;
+			} {
+				Error("Rate mismatch between '%' and '%' mixers"
+					.format(name, bus.name)
+				).throw
+			};
 		});
 
 		bus.isNumber.if(
-			{ bus = Bus.new(\audio, bus, def.outChannels, server);
+			{ bus = Bus.new(def.rate, bus, def.outChannels, server);
 			  argOutbus = bus }		// integer will not be ok for order-of-exec test below
 		);
 
@@ -153,7 +159,7 @@ MixerChannel {
 		});
 
 		name = (name.isNil).if({  // if name not given, lookup in BusDict
-			name = BusDict.audioNames.at(server).at(inbus.index);
+			name = BusDict.perform(def.names).at(server).at(inbus.index);
 			(name == "" || name.isNil).if({	// still none,
 				name = "Mixer " ++ inbus.index;	// name after bus number
 			})
@@ -538,7 +544,7 @@ MixerChannel {
 		destMixer.notNil.if({
 			destMixer.postln;			// show as mixer
 		}, {
-			(BusDict.audioNames.at(server).at(outbus.index) ++ " -> "
+			(BusDict.perform(def.names).at(server).at(outbus.index) ++ " -> "
 				++ outbus.asString).postln;			// show as bus
 		});
 		controls.asSortedArray.do({ |pair|
