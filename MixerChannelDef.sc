@@ -89,7 +89,7 @@ MixerChannelDef {
 
 	}
 
-	*new { |name, inChannels, outChannels, /*basicFader, */fader, controls, guidef, rate|
+	*new { |name, inChannels, outChannels, /*basicFader, */fader, controls, guidef, rate(\audio)|
 		inChannels.isNil.if({
 			^this.at(name)
 		}, {
