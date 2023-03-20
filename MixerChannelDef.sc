@@ -89,12 +89,12 @@ MixerChannelDef {
 
 	}
 
-	*new { |name, inChannels, outChannels, /*basicFader, */fader, controls, guidef|
+	*new { |name, inChannels, outChannels, /*basicFader, */fader, controls, guidef, rate|
 		inChannels.isNil.if({
 			^this.at(name)
 		}, {
 			^super.newCopyArgs(name, inChannels, outChannels, fader,
-				controls, guidef).init
+				controls, guidef, rate).init
 		});
 	}
 
