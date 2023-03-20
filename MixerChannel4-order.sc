@@ -1057,7 +1057,7 @@ MixerChannelReconstructor {
 					{ bundleQueue.size > 0 }.while(bundleAction);
 					nil.yield;
 				}),
-			{ queueRoutine = nil; });	// when routine stops, clear so I can restart next time
+				{ queueRoutine = nil; });	// when routine stops, clear so I can restart next time
 			SystemClock.schedAbs(Main.elapsedTime + 0.001, queueRoutine);
 		});
 	}
