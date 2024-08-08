@@ -94,11 +94,11 @@ MixerChannel {
 	}
 
 	init { |bus, initValues, completionFunc, parallel = false|
-		server.serverRunning.not.if({
+		if(server.serverRunning.not and: { server.nrt.not }) {
 			Error("Server must be booted before creating MixerChannels.").throw;
-		}, {
+		} {
 			this.fixParms(bus, initValues, completionFunc, parallel)
-		});
+		};
 	}
 
 	fixParms { |bus, initValues, completionFunc, parallel|	// make all parameters consistent; allows for
@@ -981,6 +981,8 @@ MixerChannelReconstructor {
 			queueRoutine,
 			<>queueDelay = 0.05;
 
+	classvar bundleOut;
+
 	*initClass {
 		ServerTree.add(this);
 		mixers = IdentityDictionary.new;	// server -> List of mixerchannels
@@ -1002,12 +1004,45 @@ MixerChannelReconstructor {
 		mixers[chan.server].remove(chan);
 	}
 
+	*use { |func|
+		var saveBundle = bundleOut;  // to clear after all layers have finished
+		var out;
+		if(bundleOut.isNil) {
+			bundleOut = List.new;
+		};
+		// run func directly; queueBundle saves messages
+		protect(func, {
+			out = bundleOut;
+			bundleOut = saveBundle;
+		});
+		^out
+	}
+
 	*queueBundle { |server, bundle, args|
 		args.isNil.if({ args = () });
 		args.put(\bundle, bundle);
 		args.put(\server, server);
-		bundleQueue.add(args);
-		this.doQueue;
+		if(bundleOut.isNil) {
+			bundleQueue.add(args);
+			this.doQueue;
+		} {
+			bundleOut.addAll(bundle);
+			if(args[\env].notNil) {
+				args[\env].use {
+					bundleOut.addAll(
+						server.makeBundle(false, {
+							args[\func].value(args[\chan])
+						})
+					);
+				};
+			} {
+				bundleOut.addAll(
+					server.makeBundle(false, {
+						args[\func].value(args[\chan])
+					})
+				);
+			};
+		};
 	}
 
 	*doQueue {
