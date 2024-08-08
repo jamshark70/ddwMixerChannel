@@ -1018,6 +1018,8 @@ MixerChannelReconstructor {
 		^out
 	}
 
+	*bundling { ^bundleOut.notNil }
+
 	*queueBundle { |server, bundle, args|
 		args.isNil.if({ args = () });
 		args.put(\bundle, bundle);
